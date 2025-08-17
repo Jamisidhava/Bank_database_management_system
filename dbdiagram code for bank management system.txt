@@ -1,0 +1,109 @@
+// Schema: FundsAndFinanceBank
+
+Table Customer {
+  Customer_ID int [pk]
+  Joining_date date
+}
+
+Table Customer_Details {
+  Customer_ID int [pk, ref: > Customer.Customer_ID]
+  Fname varchar(15)
+  Mname varchar(15)
+  Lname varchar(15)
+  DoB date
+  Gender varchar(15)
+  Phone_No varchar(15)
+  Email varchar(30)
+  street varchar(30)
+  city varchar(20)
+  state_name varchar(20)  // renamed from "state"
+}
+
+Table Branch {
+  IFS_CODE char(11) [pk]
+  Branch_Name varchar(20)
+  branch_street varchar(30)
+  branch_city varchar(20)
+  branch_state varchar(20)
+}
+
+Table Branch_Contacts {
+  IFS_CODE char(11) [ref: > Branch.IFS_CODE, pk]
+  Branch_Contact_No varchar(15) [pk]
+}
+
+Table Account {
+  Account_Number int [pk]
+  IFS_CODE char(11) [ref: > Branch.IFS_CODE, null]  // ON DELETE SET NULL behavior not shown
+  Customer_ID int [ref: > Customer.Customer_ID, "ON DELETE CASCADE"]
+  Account_Status varchar(15) // Allowed: Active, Inactive, Frozen, Blocked
+}
+
+Table Account_Details {
+  Account_Number int [pk, ref: > Account.Account_Number, "ON DELETE CASCADE"]
+  Account_type varchar(15) // Allowed: Savings, Current, Fixed_Deposit
+  Balance numeric(14,2)
+  Interest_Rate numeric(4,2)
+  Opening_date date
+}
+
+Table Transaction {
+  Transaction_ID char(10) [pk]
+  Sender_Account_No int [ref: > Account.Account_Number]
+  Receiver_Account_No int [ref: > Account.Account_Number]
+  Transaction_Type varchar(15) // Allowed: Transfer, Credit_Card, Deposit, Withdrawal
+  Transaction_Date date
+  Transaction_Amount numeric(10,2)
+}
+
+Table Employee {
+  Employee_ID int [pk]
+  IFS_CODE char(11) [ref: > Branch.IFS_CODE, null]  // ON DELETE SET NULL behavior not shown
+  Employee_Fname varchar(15)
+  Employee_Mname varchar(15)
+  Employee_Lname varchar(15)
+  employee_role varchar(35) // Allowed: Manager, Customer_Service_Representative, Loan_Officer, Credit_Analyst
+}
+
+Table Loan {
+  Loan_ID int [pk]
+  Account_Number int [ref: > Account.Account_Number]
+  Employee_ID int [ref: > Employee.Employee_ID, null]  // ON DELETE SET NULL behavior not shown
+  Loan_Type varchar(25) // Allowed: Education_Loan, Home_Loan, Gold_Loan, Personal_Loan, Loan_Against_Property, Business_Loan, Medical_Loan, Vehicle_Loan
+  Loan_Amount numeric(10,2)
+  Interest_Rate numeric(4,2)
+  Debt numeric(10,2)
+  Duration int
+  Loan_Approval_Date date
+  Loan_Approval_Status varchar(15) // Allowed: Approved, Not_Approved, Under_Review
+}
+
+Table Loan_Repayment {
+  Loan_ID int [ref: > Loan.Loan_ID]
+  Installment_Date date
+  Payment_Date date
+  Amount_Paid numeric(10,2)
+  Status varchar(15) // Allowed: PAID_ON_TIME, PAID_LATE, NOT_PAID
+
+  indexes {
+    (Loan_ID, Installment_Date) [pk]
+  }
+}
+
+Table Credit_Card {
+  Card_ID int [pk]
+  Account_Number int [ref: > Account.Account_Number]
+  Employee_ID int [ref: > Employee.Employee_ID, null]  // ON DELETE SET NULL behavior not shown
+  Credit_Limit numeric(10,2)
+  Fine_Rate numeric(4,2)
+  Card_Approval_Status varchar(15) // Allowed: Approved, Not_Approved, Under_Review
+}
+
+Table Card_Transaction {
+  Card_Transaction_ID char(10) [pk]
+  Card_ID int [ref: > Credit_Card.Card_ID]
+  Amount_Spent numeric(10,2)
+  Card_Transaction_Date date
+  Card_Repayment_Status varchar(15) // Allowed: PAID_ON_TIME, PAID_LATE, NOT_PAID
+  Due_Date date
+}
